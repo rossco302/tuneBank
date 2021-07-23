@@ -1,0 +1,108 @@
+MyScreenManager:
+	LoadingScreen:
+	MainScreen:
+	TuneTypesScreen:
+	TuneKeysScreen:
+	DisplayTunesScreen:
+	SearchScreen:
+
+<LoadingScreen>
+	name: 'loadingscreen'
+	Button:
+		text:'Welcome to tune bank'
+		on_press: root.load_data()
+		on_release: 
+			app.root.current = 'main screen'
+			app.root.transition.direction = 'left'
+
+<MainScreen>
+	name: 'main screen'
+	BoxLayout:
+		orientation: 'vertical'
+		Button:
+			text:'Tune Bank'
+			on_press: root.prepare_rv_data_for_TuneTypesScreen()
+			on_release: 
+				app.root.current = 'tune types'
+				app.root.transition.direction = 'left'
+		Button:
+			text: 'Search'
+			on_press: 
+				app.root.current = 'search screen' 
+				app.root.transition.direction = 'left'
+
+<TuneTypesScreen>
+	name: 'tune types'
+	BoxLayout:
+		orientation: 'vertical'
+		TuneTypesRV:
+			size_hint_y: 10
+	        viewclass: 'TuneTypesRVButton'
+	        data: app.tune_type_rv_data
+	        RecycleBoxLayout:
+	            default_size: None, dp(56)
+	            default_size_hint: 1, None
+	            size_hint_y: None
+	            height: self.minimum_height
+	            orientation: 'vertical'
+	    Button:
+	    	size_hint_y: 1
+	    	text:'Home'
+	    	on_press: 
+	    		app.root.current = 'main screen'
+	    		app.root.transition.direction = 'right'
+
+<SearchScreen>
+	name: 'search screen'
+
+<TuneKeysScreen>
+	name: 'tune keys screen'
+	BoxLayout:
+		orientation: 'vertical'
+		TuneTypesRV:
+			size_hint_y: 10
+	        viewclass: 'Button'
+	        data: app.tune_keys_rv_data
+	        RecycleBoxLayout:
+	            default_size: None, dp(56)
+	            default_size_hint: 1, None
+	            size_hint_y: None
+	            height: self.minimum_height
+	            orientation: 'vertical'
+	    BoxLayout:
+		    size_hint_y: 1
+		    orientation: 'horizontal'
+		    Button:
+		    	text:'Back'
+		    	on_press: 
+		    		app.root.current = 'tune types'
+		    		app.root.transition.direction = 'right'
+		    Button:
+		    	text:'Home'
+		    	on_press: 
+		    		app.root.current = 'main screen'
+		    		app.root.transition.direction = 'right'
+
+
+
+<TuneTypesRVButton>
+	on_press: root.populate_tune_keys_rv()
+	on_release: 
+		app.root.current = 'tune keys screen'
+		app.root.transition.direction = 'left'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
