@@ -8,6 +8,8 @@ from kivy.storage.jsonstore import JsonStore
 from kivy.properties import ObjectProperty
 from kivy.uix.button import Button
 from kivy.properties import StringProperty
+from kivy.network.urlrequest import UrlRequest
+from kivy.factory import Factory
 
 #data store
 bank_v3_store = JsonStore('bankv3store.json')
@@ -17,7 +19,9 @@ tune_types_in_store = []
 list_for_keys_rv = []
 list_for_display_tunes_rv = []
 type_pushed_ls = []
-
+search_result_rv_data = []
+tune_clicked_id = []
+tune_id = []
 
 class BankV3App(App):
 	tune_types_in_store = ListProperty()
@@ -27,9 +31,9 @@ class BankV3App(App):
 	list_for_display_tunes_rv = ListProperty()
 	display_tune_rv_data = ListProperty()
 	type_pushed_ls = ListProperty()
-
-
-
+	search_result_rv_data = ListProperty()
+	tune_clicked_id = ListProperty()
+	tune_id = ListProperty()
 
 #screens
 class MyScreenManager(ScreenManager):
@@ -57,10 +61,32 @@ class DisplayTunesScreen(Screen):
 	pass
 
 class SearchScreen(Screen):
-	pass
+	search_screen = ObjectProperty()
+	def populate_search_rv_data(self):
+		print(self.search_screen.text)
+		#make the api call that gets the name of the tunes to display as the rv data
+		url = 'https://thesession.org/tunes/search?q={}&format=json'.format(self.search_screen.text)
+		url = url.replace(' ', '%')
+		res = UrlRequest(url, self.get_json)
+
+	def get_json(self, req, data):
+		tunes = []
+		for tune in data['tunes']:
+			tunes.append(tune['name'])
+		app = App.get_running_app()
+		app.search_result_rv_data = ({'text': x} for x in tunes)
+
 
 class AddToBankPopup(Popup):
-	pass
+	def add_tune_to_data_base(self):
+		#https://thesession.org/tunes/2?format=json
+		#make the api call that gets the name of the tunes to display as the rv data
+		url = 'https://thesession.org/tunes/{}?format=json'.format(tune_id[0])
+		res = UrlRequest(url, self.get_json)
+
+	def get_json(self, req, data):
+		bank_v3_store.put(data['name'], name = data['name'], tune_key = data['settings'][0]['key'], type = data['type'])
+		print(data['settings'][0]['key'], data['type'], data['name'])
 
 #custom widgets
 class TuneTypesRV(RecycleView):
@@ -75,6 +101,10 @@ class DisplayTypesRV(RecycleView):
     def __init__(self, **kwargs):
         super(DisplayTypesRV, self).__init__(**kwargs)
 
+class SearchRV(RecycleView):
+    def __init__(self, **kwargs):
+        super(SearchRV, self).__init__(**kwargs)
+
 class TuneTypesRVButton(Button):
 	def populate_tune_keys_rv(self):
 		#populate the tune keys rv data
@@ -86,7 +116,7 @@ class TuneTypesRVButton(Button):
 		for tune in bank_v3_store:
 			for k, v in bank_v3_store.find(name = tune):
 				if v['type'] == type_pushed:
-					list_for_keys_rv.append(v['key'])
+					list_for_keys_rv.append(v['tune_key'])
 		app = App.get_running_app()
 		app.tune_keys_rv_data = [{'text': str(x)} for x in list(dict.fromkeys(list_for_keys_rv))]
 
@@ -97,10 +127,30 @@ class TuneKeysRVButton(Button):
 		type_pushed = type_pushed_ls[0]
 		#populate with only the names that have the key and type pressed before
 		for tune in bank_v3_store.find(type = type_pushed):
-			if tune[1]['key'] == key_pushed:
+			if tune[1]['tune_key'] == key_pushed:
 				list_for_display_tunes_rv.append(tune[1]['name'])
 		app = App.get_running_app()
 		app.display_tune_rv_data = [{'text': str(x)} for x in list(dict.fromkeys(list_for_display_tunes_rv))]
+
+class SearchRVButton(Button):
+	def open_popup(self):
+		clicked_tune_name = self.text
+		#open a pup up and get tune info with an api call
+		url = 'https://thesession.org/tunes/search?q={}&format=json'.format(clicked_tune_name)
+		url = url.replace(' ', '%20')
+		res = UrlRequest(url, self.get_tune_id)
+
+	def get_tune_id(self, req, data):
+		tunes = []
+		for tune in data['tunes']:
+			if self.text == tune['name']:
+				tune_id.clear()
+				tune_id.append(tune['id'])
+
+		clicked_tune_name = self.text
+		AddToBankPopup.title = clicked_tune_name
+		Factory.AddToBankPopup().open()
+
 
 
 

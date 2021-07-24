@@ -28,7 +28,7 @@ MyScreenManager:
 		Button:
 			text: 'Search'
 			on_press: 
-				app.root.current = 'search screen' 
+				app.root.current = 'search_screen' 
 				app.root.transition.direction = 'left'
 
 <TuneTypesScreen>
@@ -53,7 +53,32 @@ MyScreenManager:
 	    		app.root.transition.direction = 'right'
 
 <SearchScreen>
-	name: 'search screen'
+	search_screen: search_query
+	name: 'search_screen'
+	BoxLayout:
+		orientation: 'vertical'
+		TextInput:
+			id: search_query
+			size_hint_y: 1
+		Button:
+			text: 'search'
+			on_press: root.populate_search_rv_data()
+		SearchRV:
+			size_hint_y: 10
+	        viewclass: 'SearchRVButton'
+	        data: app.search_result_rv_data
+	        RecycleBoxLayout:
+	            default_size: None, dp(56)
+	            default_size_hint: 1, None
+	            size_hint_y: None
+	            height: self.minimum_height
+	            orientation: 'vertical'
+		Button:
+			size_hint_y: 1
+	    	text:'Home'
+			on_press: 
+				app.root.current = 'main screen'
+				app.root.transition.direction = 'right'
 
 <TuneKeysScreen>
 	name: 'tune keys screen'
@@ -126,7 +151,21 @@ MyScreenManager:
 		app.root.current = 'display tunes screen'
 		app.root.transition.direction = 'left'
 
+<SearchRVButton>
+	on_press: root.open_popup()
+	id: searchrvbutton
 
+<AddToBankPopup>
+	BoxLayout:
+		orientation: 'vertical'
+		Button:
+			size_hint_y: 5
+			text: 'add {} to bank'.format(root.title)
+			on_press: root.add_tune_to_data_base()
+	    Button:
+	    	size_hint_y:1
+	        text: 'Back'
+	        on_release: root.dismiss()
 
 
 
