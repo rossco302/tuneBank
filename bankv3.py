@@ -85,8 +85,8 @@ class AddToBankPopup(Popup):
 		res = UrlRequest(url, self.get_json)
 
 	def get_json(self, req, data):
-		bank_v3_store.put(data['name'], name = data['name'], tune_key = data['settings'][0]['key'], type = data['type'])
-		print(data['settings'][0]['key'], data['type'], data['name'])
+		bank_v3_store.put(data['name'], name = data['name'], tune_key = data['settings'][0]['key'], type = data['type'], abc = data['settings'][0]['abc'])
+		print(data['settings'][0]['key'], data['type'], data['name'], data['settings'][0]['abc'])
 
 #custom widgets
 class TuneTypesRV(RecycleView):
@@ -150,6 +150,9 @@ class SearchRVButton(Button):
 		clicked_tune_name = self.text
 		AddToBankPopup.title = clicked_tune_name
 		Factory.AddToBankPopup().open()
+
+class DisplayTunesScreenButton(Button):
+	pass
 
 
 

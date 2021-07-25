@@ -116,7 +116,7 @@ MyScreenManager:
 		orientation: 'vertical'
 		DisplayTypesRV:
 			size_hint_y: 10
-		    viewclass: 'Label'
+		    viewclass: 'DisplayTunesScreenButton'
 		    data: app.display_tune_rv_data
 		    RecycleBoxLayout:
 		        default_size: None, dp(56)
@@ -167,6 +167,8 @@ MyScreenManager:
 	        text: 'Back'
 	        on_release: root.dismiss()
 
+<DisplayTunesScreenButton>
+	on_press: print('pressed')
 
 
 
