@@ -168,8 +168,32 @@ MyScreenManager:
 	        on_release: root.dismiss()
 
 <DisplayTunesScreenButton>
-	on_press: print('pressed')
+	on_press: root.open_tune_popup()
+	on_release: root.create_abc_and_midi()
+	id: display_tunes_id
 
+<TunePopup>
+	title: 'play tune'
+	BoxLayout:
+		orientation: 'vertical'
+		BoxLayout:
+			orientation: 'vertical'
+			Button:
+				size_hint_y:2
+				text:'play'
+				on_press: root.play_tune()
+			Button:
+				size_hint_y:2
+				text:'stop'
+				on_press: root.stop_tune()
+		Label:
+			size_hint_y: 7
+			text: ''
+		Button:
+			size_hint_y:1
+		    text: 'Back'
+		    on_press: root.del_temp_mid()
+		    on_release: root.dismiss()
 
 
 

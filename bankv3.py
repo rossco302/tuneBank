@@ -10,6 +10,10 @@ from kivy.uix.button import Button
 from kivy.properties import StringProperty
 from kivy.network.urlrequest import UrlRequest
 from kivy.factory import Factory
+from music21 import converter, midi
+import time
+from kivy.core.audio import SoundLoader
+import os
 
 #data store
 bank_v3_store = JsonStore('bankv3store.json')
@@ -34,6 +38,7 @@ class BankV3App(App):
 	search_result_rv_data = ListProperty()
 	tune_clicked_id = ListProperty()
 	tune_id = ListProperty()
+
 
 #screens
 class MyScreenManager(ScreenManager):
@@ -87,6 +92,33 @@ class AddToBankPopup(Popup):
 	def get_json(self, req, data):
 		bank_v3_store.put(data['name'], name = data['name'], tune_key = data['settings'][0]['key'], type = data['type'], abc = data['settings'][0]['abc'])
 		print(data['settings'][0]['key'], data['type'], data['name'], data['settings'][0]['abc'])
+
+class TunePopup(Popup):
+	def play_tune(self):
+		print('play_tune called')
+		s = converter.parse('tempabc.abc')
+		s.write('midi', fp='temp.mid')
+		self.sound = SoundLoader.load("temp.mid")
+		self.sound.play()
+
+	def stop_tune(self):
+		try: 
+			self.sound.stop()
+		except:
+			pass
+
+	def del_temp_mid(self):
+		def stop_tune(self):
+			try: 
+				self.sound.stop()
+			except:
+				pass
+		stop_tune(self)
+		if os.path.exists('temp.mid'):
+			os.remove('temp.mid')
+			os.remove('tempabc.abc')
+		else:
+			os.remove('tempabc.abc')
 
 #custom widgets
 class TuneTypesRV(RecycleView):
@@ -152,7 +184,28 @@ class SearchRVButton(Button):
 		Factory.AddToBankPopup().open()
 
 class DisplayTunesScreenButton(Button):
-	pass
+	def open_tune_popup(self):
+		Factory.TunePopup().open()
+	def create_abc_and_midi(self):
+		def get_time_signature(self):
+			if bank_v3_store.get(tune)['type'] == 'jig':
+				return '6/8'
+			elif bank_v3_store.get(tune)['type'] == 'reel':
+				return '4/4'
+
+		tune = self.text
+		abc_R = "R: " + str(bank_v3_store.get(tune)['type'])
+		abc_M = 'M: ' + str(get_time_signature(self))
+		abc_L = 'L: 1/8'
+		abc_K = 'K: '+ bank_v3_store.get(tune)['tune_key']
+		abc_info = abc_R + '\n' + abc_L + '\n' + abc_M + '\n' + abc_K + '\n'
+		abc_notes = str(bank_v3_store.get(tune)['abc'])
+		abc_string = abc_info + abc_notes
+		f = open('tempabc.abc', 'a')
+		f.write(abc_string)
+
+
+		
 
 
 
