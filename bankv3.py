@@ -52,9 +52,11 @@ class MainScreen(Screen):
 	def populate_tune_types_rv(self):
 		for tune in bank_v3_store:
 			tune_in_store_type = bank_v3_store.get(tune)['type']
-			tune_types_in_store.append(tune_in_store_type)
+			if tune_in_store_type not in tune_types_in_store:
+				tune_types_in_store.append(tune_in_store_type)
 		app = App.get_running_app()
-		app.tune_type_rv_data = [{'text': str(x + 's')} for x in list(dict.fromkeys(tune_types_in_store))]
+		app.tune_type_rv_data = [{'text': str(x + 's')} for x in tune_types_in_store]
+
 
 class TuneTypesScreen(Screen):
 	pass
@@ -120,6 +122,10 @@ class TunePopup(Popup):
 		else:
 			os.remove('tempabc.abc')
 
+	def delete_from_tune_bank(self):
+		print('delete_from_tune_bank pressed')
+		pass
+
 #custom widgets
 class TuneTypesRV(RecycleView):
     def __init__(self, **kwargs):
@@ -147,10 +153,11 @@ class TuneTypesRVButton(Button):
 		list_for_keys_rv = []
 		for tune in bank_v3_store:
 			for k, v in bank_v3_store.find(name = tune):
-				if v['type'] == type_pushed:
+				if v['type'] == type_pushed and v['tune_key'] not in list_for_keys_rv:
 					list_for_keys_rv.append(v['tune_key'])
+		print(list_for_keys_rv)
 		app = App.get_running_app()
-		app.tune_keys_rv_data = [{'text': str(x)} for x in list(dict.fromkeys(list_for_keys_rv))]
+		app.tune_keys_rv_data = [{'text': str(x)} for x in list_for_keys_rv]
 
 class TuneKeysRVButton(Button):
 	def populate_display_tunes_rv(self):
@@ -162,7 +169,7 @@ class TuneKeysRVButton(Button):
 			if tune[1]['tune_key'] == key_pushed:
 				list_for_display_tunes_rv.append(tune[1]['name'])
 		app = App.get_running_app()
-		app.display_tune_rv_data = [{'text': str(x)} for x in list(dict.fromkeys(list_for_display_tunes_rv))]
+		app.display_tune_rv_data = [{'text': str(x)} for x in list_for_display_tunes_rv]
 
 class SearchRVButton(Button):
 	def open_popup(self):
