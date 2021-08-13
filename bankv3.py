@@ -26,6 +26,7 @@ type_pushed_ls = []
 search_result_rv_data = []
 tune_clicked_id = []
 tune_id = []
+current_tune_name = []
 
 class BankV3App(App):
 	tune_types_in_store = ListProperty()
@@ -38,6 +39,7 @@ class BankV3App(App):
 	search_result_rv_data = ListProperty()
 	tune_clicked_id = ListProperty()
 	tune_id = ListProperty()
+	current_tune_name = ListProperty()
 
 
 #screens
@@ -124,7 +126,12 @@ class TunePopup(Popup):
 
 	def delete_from_tune_bank(self):
 		print('delete_from_tune_bank pressed')
-		pass
+		print(current_tune_name[0])
+		bank_v3_store.delete(current_tune_name[0])
+		populate_tune_keys_rv()
+		populate_display_tunes_rv()
+		populate_tune_types_rv()
+		
 
 #custom widgets
 class TuneTypesRV(RecycleView):
@@ -192,6 +199,9 @@ class SearchRVButton(Button):
 
 class DisplayTunesScreenButton(Button):
 	def open_tune_popup(self):
+		current_tune_name.clear()
+		current_tune_name.append(self.text)
+		print(current_tune_name[0])
 		Factory.TunePopup().open()
 	def create_abc_and_midi(self):
 		def get_time_signature(self):
