@@ -21,9 +21,9 @@ MyScreenManager:
 		orientation: 'vertical'
 		Button:
 			text:'Tune Bank'
-			on_press: root.populate_tune_types_rv()
+			on_press: root.populalte_main_tune_list_rv()
 			on_release: 
-				app.root.current = 'tune types'
+				app.root.current = 'tune_search'
 				app.root.transition.direction = 'left'
 		Button:
 			text: 'Search'
@@ -32,13 +32,21 @@ MyScreenManager:
 				app.root.transition.direction = 'left'
 
 <TuneTypesScreen>
-	name: 'tune types'
+	tune_search: tune_search_res
+	name: 'tune_search'
 	BoxLayout:
 		orientation: 'vertical'
+		TextInput:
+	    	size_hint_y: 1
+	    	id: tune_search_res
+	    Button:
+	    	size_hint_y: 1
+	    	text: 'search'	
+	    	on_press: root.search_tune_bank()
 		TuneTypesRV:
 			size_hint_y: 10
 	        viewclass: 'TuneTypesRVButton'
-	        data: app.tune_type_rv_data
+	        data: app.main_tune_list_rv
 	        RecycleBoxLayout:
 	            default_size: None, dp(56)
 	            default_size_hint: 1, None
@@ -139,11 +147,10 @@ MyScreenManager:
 		    		app.root.transition.direction = 'right'
 
 <TuneTypesRVButton>
-	on_press: root.populate_tune_keys_rv()
+	on_press: root.open_tune_popup()
+	on_release: root.create_abc_and_midi()
 	id: tune_types_rv_button
-	on_release: 
-		app.root.current = 'tune keys screen'
-		app.root.transition.direction = 'left'
+
 
 <TuneKeysRVButton>
 	on_press: root.populate_display_tunes_rv()
@@ -153,6 +160,7 @@ MyScreenManager:
 
 <SearchRVButton>
 	on_press: root.open_popup()
+	on_release: root.create_abc_and_midi()
 	id: searchrvbutton
 
 <AddToBankPopup>

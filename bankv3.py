@@ -27,6 +27,8 @@ search_result_rv_data = []
 tune_clicked_id = []
 tune_id = []
 current_tune_name = []
+main_tune_list_rv = []
+main_tune_list = []
 
 class BankV3App(App):
 	tune_types_in_store = ListProperty()
@@ -40,6 +42,8 @@ class BankV3App(App):
 	tune_clicked_id = ListProperty()
 	tune_id = ListProperty()
 	current_tune_name = ListProperty()
+	main_tune_list_rv = ListProperty()
+	main_tune_list = ListProperty()
 
 
 #screens
@@ -51,6 +55,13 @@ class LoadingScreen(Screen):
 		pass
 	
 class MainScreen(Screen):
+	def populalte_main_tune_list_rv(self):
+		main_tune_list.clear()
+		for tune in bank_v3_store:
+			main_tune_list.append(tune)
+		app = App.get_running_app()
+		app.main_tune_list_rv = [{'text': str(x)} for x in sorted(main_tune_list)]
+
 	def populate_tune_types_rv(self):
 		for tune in bank_v3_store:
 			tune_in_store_type = bank_v3_store.get(tune)['type']
@@ -60,8 +71,21 @@ class MainScreen(Screen):
 		app.tune_type_rv_data = [{'text': str(x + 's')} for x in tune_types_in_store]
 
 
+
+
+
 class TuneTypesScreen(Screen):
-	pass
+	def search_tune_bank(self):
+		tune_search = ObjectProperty()
+		tunes = []
+		for item in bank_v3_store:
+			tunes.append(item)
+		if self.tune_search.text in tunes:
+			main_tune_list.clear()
+			main_tune_list.append(self.tune_search.text)
+			app = App.get_running_app()
+			app.main_tune_list_rv = [{'text': str(x)} for x in sorted(main_tune_list)]
+
 
 class TuneKeysScreen(Screen):
 	pass
@@ -76,6 +100,7 @@ class SearchScreen(Screen):
 		#make the api call that gets the name of the tunes to display as the rv data
 		url = 'https://thesession.org/tunes/search?q={}&format=json'.format(self.search_screen.text)
 		url = url.replace(' ', '%')
+		print(url)
 		res = UrlRequest(url, self.get_json)
 
 	def get_json(self, req, data):
@@ -112,6 +137,13 @@ class TunePopup(Popup):
 			pass
 
 	def del_temp_mid(self):
+		def populalte_main_tune_list_rv(self):
+			main_tune_list.clear()
+			for tune in bank_v3_store:
+				main_tune_list.append(tune)
+			app = App.get_running_app()
+			app.main_tune_list_rv = [{'text': str(x)} for x in sorted(main_tune_list)]
+		populalte_main_tune_list_rv(self)
 		def stop_tune(self):
 			try: 
 				self.sound.stop()
@@ -124,13 +156,18 @@ class TunePopup(Popup):
 		else:
 			os.remove('tempabc.abc')
 
+
 	def delete_from_tune_bank(self):
+		def populalte_main_tune_list_rv(self):
+			main_tune_list.clear()
+			for tune in bank_v3_store:
+				main_tune_list.append(tune)
+			app = App.get_running_app()
+			app.main_tune_list_rv = [{'text': str(x)} for x in sorted(main_tune_list)]
 		print('delete_from_tune_bank pressed')
 		print(current_tune_name[0])
 		bank_v3_store.delete(current_tune_name[0])
-		populate_tune_keys_rv()
-		populate_display_tunes_rv()
-		populate_tune_types_rv()
+		populalte_main_tune_list_rv(self)
 		
 
 #custom widgets
@@ -164,7 +201,31 @@ class TuneTypesRVButton(Button):
 					list_for_keys_rv.append(v['tune_key'])
 		print(list_for_keys_rv)
 		app = App.get_running_app()
-		app.tune_keys_rv_data = [{'text': str(x)} for x in list_for_keys_rv]
+		app.tudel_temp_midne_keys_rv_data = [{'text': str(x)} for x in list_for_keys_rv]
+
+	def open_tune_popup(self):
+		current_tune_name.clear()
+		current_tune_name.append(self.text)
+		print(current_tune_name[0])
+		Factory.TunePopup().open()
+
+	def create_abc_and_midi(self):
+		def get_time_signature(self):
+			if bank_v3_store.get(tune)['type'] == 'jig':
+				return '6/8'
+			elif bank_v3_store.get(tune)['type'] == 'reel':
+				return '4/4'
+
+		tune = self.text
+		abc_R = "R: " + str(bank_v3_store.get(tune)['type'])
+		abc_M = 'M: ' + str(get_time_signature(self))
+		abc_L = 'L: 1/8'
+		abc_K = 'K: '+ bank_v3_store.get(tune)['tune_key']
+		abc_info = abc_R + '\n' + abc_L + '\n' + abc_M + '\n' + abc_K + '\n'
+		abc_notes = str(bank_v3_store.get(tune)['abc'])
+		abc_string = abc_info + abc_notes
+		f = open('tempabc.abc', 'a')
+		f.write(abc_string)
 
 class TuneKeysRVButton(Button):
 	def populate_display_tunes_rv(self):
@@ -203,6 +264,7 @@ class DisplayTunesScreenButton(Button):
 		current_tune_name.append(self.text)
 		print(current_tune_name[0])
 		Factory.TunePopup().open()
+	
 	def create_abc_and_midi(self):
 		def get_time_signature(self):
 			if bank_v3_store.get(tune)['type'] == 'jig':
@@ -220,12 +282,7 @@ class DisplayTunesScreenButton(Button):
 		abc_string = abc_info + abc_notes
 		f = open('tempabc.abc', 'a')
 		f.write(abc_string)
-
-
-		
-
-
-
+		print('function called')
 
 if __name__ == '__main__':
 	BankV3App().run()
