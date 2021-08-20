@@ -113,6 +113,7 @@ class SearchScreen(Screen):
 
 class AddToBankPopup(Popup):
 	def add_tune_to_data_base(self):
+		print('got here!!')
 		#https://thesession.org/tunes/2?format=json
 		#make the api call that gets the name of the tunes to display as the rv data
 		url = 'https://thesession.org/tunes/{}?format=json'.format(tune_id[0])
@@ -257,6 +258,25 @@ class SearchRVButton(Button):
 		clicked_tune_name = self.text
 		AddToBankPopup.title = clicked_tune_name
 		Factory.AddToBankPopup().open()
+	
+	def create_abc_and_midi(self):
+		def get_time_signature(self):
+			if bank_v3_store.get(tune)['type'] == 'jig':
+				return '6/8'
+			elif bank_v3_store.get(tune)['type'] == 'reel':
+				return '4/4'
+
+		tune = self.text
+		abc_R = "R: " + str(bank_v3_store.get(tune)['type'])
+		abc_M = 'M: ' + str(get_time_signature(self))
+		abc_L = 'L: 1/8'
+		abc_K = 'K: '+ bank_v3_store.get(tune)['tune_key']
+		abc_info = abc_R + '\n' + abc_L + '\n' + abc_M + '\n' + abc_K + '\n'
+		abc_notes = str(bank_v3_store.get(tune)['abc'])
+		abc_string = abc_info + abc_notes
+		f = open('tempabc.abc', 'a')
+		f.write(abc_string)
+		print('function called')
 
 class DisplayTunesScreenButton(Button):
 	def open_tune_popup(self):
