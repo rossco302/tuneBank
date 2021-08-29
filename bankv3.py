@@ -1,6 +1,8 @@
 from kivy.app import App
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.popup import Popup
+from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.recycleview import RecycleView
 from kivy.properties import ListProperty
@@ -14,6 +16,11 @@ from music21 import converter, midi
 import time
 from kivy.core.audio import SoundLoader
 import os
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.properties import BooleanProperty
+from kivy.uix.recycleboxlayout import RecycleBoxLayout
+from kivy.uix.behaviors import FocusBehavior
+from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 
 #data store
 bank_v3_store = JsonStore('bankv3store.json')
@@ -29,6 +36,11 @@ tune_id = []
 current_tune_name = []
 main_tune_list_rv = []
 main_tune_list = []
+tune_types_in_store_rv = []
+tune_types_in_store = []
+tune_keys_in_store = []
+tune_keys_in_store_rv = []
+update_tunes = []
 
 class BankV3App(App):
 	tune_types_in_store = ListProperty()
@@ -44,6 +56,11 @@ class BankV3App(App):
 	current_tune_name = ListProperty()
 	main_tune_list_rv = ListProperty()
 	main_tune_list = ListProperty()
+	tune_types_in_store = ListProperty()
+	tune_types_in_store_rv = ListProperty()
+	tune_keys_in_store = ListProperty()
+	tune_keys_in_store_rv = ListProperty()
+	update_tunes = ListProperty()
 
 
 #screens
@@ -55,6 +72,31 @@ class LoadingScreen(Screen):
 		pass
 	
 class MainScreen(Screen):
+	def populate_tune_types_rv(self):
+		#populate the tune keys rv data
+		#get all of the associeted keys for the tune types in tune_types_in_store
+		tune_types_in_store_rv.clear()
+		for tune in bank_v3_store:
+			for k, v in bank_v3_store.find(name = tune):
+				tune_types_in_store_rv.append(v['type'])
+		
+		tune_types_in_store_minus_duplicates = list(dict.fromkeys(tune_types_in_store_rv))
+		app = App.get_running_app()
+		app.tune_types_in_store_rv = [{'text': str(x)} for x in tune_types_in_store_minus_duplicates]
+
+	def populate_tune_keys_rv(self):
+		#populate the tune keys rv data
+		#get all of the associeted keys for the tune types in tune_types_in_store
+		tune_keys_in_store.clear()
+		for tune in bank_v3_store:
+			for k, v in bank_v3_store.find(name = tune):
+				tune_keys_in_store.append(v['tune_key'])
+		
+		tune_keys_in_store_minus_duplicates = list(dict.fromkeys(tune_keys_in_store))
+		app = App.get_running_app()
+		app.tune_keys_in_store_rv = [{'text': str(x)} for x in tune_keys_in_store_minus_duplicates]
+		print(tune_keys_in_store_minus_duplicates)
+
 	def populalte_main_tune_list_rv(self):
 		main_tune_list.clear()
 		for tune in bank_v3_store:
@@ -62,19 +104,10 @@ class MainScreen(Screen):
 		app = App.get_running_app()
 		app.main_tune_list_rv = [{'text': str(x)} for x in sorted(main_tune_list)]
 
-	def populate_tune_types_rv(self):
-		for tune in bank_v3_store:
-			tune_in_store_type = bank_v3_store.get(tune)['type']
-			if tune_in_store_type not in tune_types_in_store:
-				tune_types_in_store.append(tune_in_store_type)
-		app = App.get_running_app()
-		app.tune_type_rv_data = [{'text': str(x + 's')} for x in tune_types_in_store]
 
 
 
-
-
-class TuneTypesScreen(Screen):
+class TunesInBankScreen(Screen):
 	def search_tune_bank(self):
 		tune_search = ObjectProperty()
 		tunes = []
@@ -172,6 +205,15 @@ class TunePopup(Popup):
 		
 
 #custom widgets
+		
+class TuneTypesInStoreRV(RecycleView):
+    def __init__(self, **kwargs):
+        super(TuneTypesInStoreRV, self).__init__(**kwargs)
+
+class TuneKeysInStoreRV(RecycleView):
+    def __init__(self, **kwargs):
+        super(TuneKeysInStoreRV, self).__init__(**kwargs)
+
 class TuneTypesRV(RecycleView):
     def __init__(self, **kwargs):
         super(TuneTypesRV, self).__init__(**kwargs)
@@ -189,20 +231,6 @@ class SearchRV(RecycleView):
         super(SearchRV, self).__init__(**kwargs)
 
 class TuneTypesRVButton(Button):
-	def populate_tune_keys_rv(self):
-		#populate the tune keys rv data
-		#get all of the associeted keys for the tune types in tune_types_in_store
-		type_pushed = self.text [0:-1]
-		type_pushed_ls.clear()
-		type_pushed_ls.append(type_pushed)
-		list_for_keys_rv = []
-		for tune in bank_v3_store:
-			for k, v in bank_v3_store.find(name = tune):
-				if v['type'] == type_pushed and v['tune_key'] not in list_for_keys_rv:
-					list_for_keys_rv.append(v['tune_key'])
-		print(list_for_keys_rv)
-		app = App.get_running_app()
-		app.tudel_temp_midne_keys_rv_data = [{'text': str(x)} for x in list_for_keys_rv]
 
 	def open_tune_popup(self):
 		current_tune_name.clear()
@@ -303,6 +331,44 @@ class DisplayTunesScreenButton(Button):
 		f = open('tempabc.abc', 'a')
 		f.write(abc_string)
 		print('function called')
+
+class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
+                                 RecycleBoxLayout):
+    ''' Adds selection and focus behaviour to the view. '''
+
+
+class SelectableLabel(RecycleDataViewBehavior, Label):
+    ''' Add selection support to the Label '''
+    index = None
+    selected = BooleanProperty(False)
+    selectable = BooleanProperty(True)
+
+    def refresh_view_attrs(self, rv, index, data):
+        ''' Catch and handle the view changes '''
+        self.index = index
+        return super(SelectableLabel, self).refresh_view_attrs(
+            rv, index, data)
+
+    def on_touch_down(self, touch):
+        ''' Add selection on touch down '''
+        if super(SelectableLabel, self).on_touch_down(touch):
+            return True
+        if self.collide_point(*touch.pos) and self.selectable:
+            return self.parent.select_with_touch(self.index, touch)
+
+    def apply_selection(self, rv, index, is_selected):
+        ''' Respond to the selection of items in the view. '''
+        self.selected = is_selected
+        if is_selected:
+        	update_tunes.append(self.text)
+        	print(update_tunes)
+            #print("selection changed to {0}".format(rv.data[index]))
+        else:
+            #print("selection removed for {0}".format(rv.data[index]))
+            try: 
+            	update_tunes.remove(self.text)
+            except:
+            	pass
 
 if __name__ == '__main__':
 	BankV3App().run()

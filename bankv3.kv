@@ -1,7 +1,7 @@
 MyScreenManager:
 	LoadingScreen:
 	MainScreen:
-	TuneTypesScreen:
+	TunesInBankScreen:
 	TuneKeysScreen:
 	DisplayTunesScreen:
 	SearchScreen:
@@ -25,13 +25,15 @@ MyScreenManager:
 			on_release: 
 				app.root.current = 'tune_search'
 				app.root.transition.direction = 'left'
+				root.populate_tune_types_rv()
+				root.populate_tune_keys_rv()
 		Button:
 			text: 'Search'
 			on_press: 
 				app.root.current = 'search_screen' 
 				app.root.transition.direction = 'left'
 
-<TuneTypesScreen>
+<TunesInBankScreen>
 	tune_search: tune_search_res
 	name: 'tune_search'
 	BoxLayout:
@@ -43,6 +45,10 @@ MyScreenManager:
 	    	size_hint_y: 1
 	    	text: 'search'	
 	    	on_press: root.search_tune_bank()
+		TuneTypesInStoreRV:
+			size_hint_y: 1
+		TuneKeysInStoreRV:
+			size_hint_y: 1
 		TuneTypesRV:
 			size_hint_y: 10
 	        viewclass: 'TuneTypesRVButton'
@@ -206,7 +212,42 @@ MyScreenManager:
 		    on_press: root.del_temp_mid()
 		    on_release: root.dismiss()
 
+<TuneTypesInStoreRV>:
+    viewclass: 'SelectableLabel'
+    data: app.tune_types_in_store_rv
+    bar_width: 16
+    do_scroll_x: True
+    do_scroll_y: False
+    SelectableRecycleBoxLayout:
+        size_hint_x: None
+        width: self.minimum_width
+        orientation: 'horizontal'
+        multiselect: True
+        touch_multiselect: True
 
+<TuneKeysInStoreRV>:
+    viewclass: 'SelectableLabel'
+    data: app.tune_keys_in_store_rv
+    bar_width: 16
+    do_scroll_x: True
+    do_scroll_y: False
+    SelectableRecycleBoxLayout:
+        size_hint_x: None
+        width: self.minimum_width
+        orientation: 'horizontal'
+        multiselect: True
+        touch_multiselect: True
+
+<SelectableLabel>:
+    # Draw a background to indicate selection
+    size_hint_x: None
+    width: dp(50) + self.texture_size[0]
+    canvas.before:
+        Color:
+            rgba: (.0, 0.9, .1, .3) if self.selected else (0, 0, 0, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
 
 
