@@ -40,7 +40,8 @@ tune_types_in_store_rv = []
 tune_types_in_store = []
 tune_keys_in_store = []
 tune_keys_in_store_rv = []
-update_tunes = []
+update_tunes_key = []
+update_tunes_type = []
 
 class BankV3App(App):
 	tune_types_in_store = ListProperty()
@@ -60,7 +61,8 @@ class BankV3App(App):
 	tune_types_in_store_rv = ListProperty()
 	tune_keys_in_store = ListProperty()
 	tune_keys_in_store_rv = ListProperty()
-	update_tunes = ListProperty()
+	update_tunes_key = ListProperty()
+	update_tunes_type = ListProperty()
 
 
 #screens
@@ -119,12 +121,6 @@ class TunesInBankScreen(Screen):
 			app = App.get_running_app()
 			app.main_tune_list_rv = [{'text': str(x)} for x in sorted(main_tune_list)]
 
-
-class TuneKeysScreen(Screen):
-	pass
-
-class DisplayTunesScreen(Screen):
-	pass
 
 class SearchScreen(Screen):
 	search_screen = ObjectProperty()
@@ -214,23 +210,16 @@ class TuneKeysInStoreRV(RecycleView):
     def __init__(self, **kwargs):
         super(TuneKeysInStoreRV, self).__init__(**kwargs)
 
-class TuneTypesRV(RecycleView):
+class MainTuneListRV(RecycleView):
     def __init__(self, **kwargs):
-        super(TuneTypesRV, self).__init__(**kwargs)
+        super(MainTuneListRV, self).__init__(**kwargs)
 
-class TuneKeysRV(RecycleView):
-    def __init__(self, **kwargs):
-        super(TuneKeysRV, self).__init__(**kwargs)
-
-class DisplayTypesRV(RecycleView):
-    def __init__(self, **kwargs):
-        super(DisplayTypesRV, self).__init__(**kwargs)
 
 class SearchRV(RecycleView):
     def __init__(self, **kwargs):
         super(SearchRV, self).__init__(**kwargs)
 
-class TuneTypesRVButton(Button):
+class MainTuneListRVButton(Button):
 
 	def open_tune_popup(self):
 		current_tune_name.clear()
@@ -337,7 +326,7 @@ class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
     ''' Adds selection and focus behaviour to the view. '''
 
 
-class SelectableLabel(RecycleDataViewBehavior, Label):
+class SelectableLabelTuneType(RecycleDataViewBehavior, Label):
     ''' Add selection support to the Label '''
     index = None
     selected = BooleanProperty(False)
@@ -346,12 +335,12 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
     def refresh_view_attrs(self, rv, index, data):
         ''' Catch and handle the view changes '''
         self.index = index
-        return super(SelectableLabel, self).refresh_view_attrs(
+        return super(SelectableLabelTuneType, self).refresh_view_attrs(
             rv, index, data)
 
     def on_touch_down(self, touch):
         ''' Add selection on touch down '''
-        if super(SelectableLabel, self).on_touch_down(touch):
+        if super(SelectableLabelTuneType, self).on_touch_down(touch):
             return True
         if self.collide_point(*touch.pos) and self.selectable:
             return self.parent.select_with_touch(self.index, touch)
@@ -360,13 +349,122 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
         ''' Respond to the selection of items in the view. '''
         self.selected = is_selected
         if is_selected:
-        	update_tunes.append(self.text)
-        	print(update_tunes)
-            #print("selection changed to {0}".format(rv.data[index]))
+            main_tune_list.clear()
+            update_tunes_type.append(self.text)
+            print('update tune type list', update_tunes_type)
+            for tune in bank_v3_store:
+                if len(update_tunes_key) >= 1:
+                    for tune in bank_v3_store:
+                        if bank_v3_store.get(tune)['type'] in update_tunes_type:
+                            if bank_v3_store.get(tune)['tune_key'] in update_tunes_key:
+                                main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+                elif bank_v3_store.get(tune)['type'] in update_tunes_type:
+                    main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+
+
+            app = App.get_running_app()
+            app.main_tune_list_rv = [{'text': str(x)} for x in sorted(list(dict.fromkeys(main_tune_list)))]
         else:
             #print("selection removed for {0}".format(rv.data[index]))
             try: 
-            	update_tunes.remove(self.text)
+                main_tune_list.clear()
+                update_tunes_type.remove(self.text)
+                print('update tune type list', update_tunes_type)
+                for tune in bank_v3_store:
+                    if len(update_tunes_key) >= 1:
+                        for tune in bank_v3_store:
+                            if bank_v3_store.get(tune)['type'] in update_tunes_type:
+                                if bank_v3_store.get(tune)['tune_key'] in update_tunes_key:
+                                    main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+                    elif bank_v3_store.get(tune)['type'] in update_tunes_type:
+                        main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+        
+                if len(main_tune_list) == 0:
+                	for tune in bank_v3_store:
+                		main_tune_list.append(tune)
+                	app = App.get_running_app()
+                	app.main_tune_list_rv = [{'text': str(x)} for x in sorted(list(dict.fromkeys(main_tune_list)))]
+
+
+                else:
+                	app = App.get_running_app()
+                	app.main_tune_list_rv = [{'text': str(x)} for x in sorted(list(dict.fromkeys(main_tune_list)))]
+            except:
+            	pass
+
+class SelectableLabelTuneKey(RecycleDataViewBehavior, Label):
+    ''' Add selection support to the Label '''
+    index = None
+    selected = BooleanProperty(False)
+    selectable = BooleanProperty(True)
+
+    def refresh_view_attrs(self, rv, index, data):
+        ''' Catch and handle the view changes '''
+        self.index = index
+        return super(SelectableLabelTuneKey, self).refresh_view_attrs(
+            rv, index, data)
+
+    def on_touch_down(self, touch):
+        ''' Add selection on touch down '''
+        if super(SelectableLabelTuneKey, self).on_touch_down(touch):
+            return True
+        if self.collide_point(*touch.pos) and self.selectable:
+            return self.parent.select_with_touch(self.index, touch)
+
+    def apply_selection(self, rv, index, is_selected):
+        ''' Respond to the selection of items in the view. '''
+        self.selected = is_selected
+        if is_selected:
+            main_tune_list.clear()
+            update_tunes_key.append(self.text)
+            print('update tune key list', update_tunes_key)
+            for tune in bank_v3_store:
+                if len(update_tunes_type) >= 1:
+                    for tune in bank_v3_store:
+                        if bank_v3_store.get(tune)['type'] in update_tunes_type:
+                            if bank_v3_store.get(tune)['tune_key'] in update_tunes_key:
+                                main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+                elif bank_v3_store.get(tune)['tune_key'] in update_tunes_key:
+                    main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+            app = App.get_running_app()
+            app.main_tune_list_rv = [{'text': str(x)} for x in sorted(list(dict.fromkeys(main_tune_list)))]
+        else:
+            #print("selection removed for {0}".format(rv.data[index]))
+            try: 
+                main_tune_list.clear()
+                update_tunes_key.remove(self.text)
+                print('update tune key list', update_tunes_key)
+                if len(update_tunes_type) >= 1 and len(update_tunes_key) == 0:
+                	for tune in bank_v3_store:
+                		if bank_v3_store.get(tune)['type'] in update_tunes_type:
+                			main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+
+                elif len(update_tunes_type) >= 1:
+                    for tune in bank_v3_store:
+                        if bank_v3_store.get(tune)['type'] in update_tunes_type:
+                            if bank_v3_store.get(tune)['tune_key'] in update_tunes_key:
+                                main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+                elif bank_v3_store.get(tune)['tune_key'] in update_tunes_key:
+	                    main_tune_list.append(bank_v3_store.get(tune)['name'])
+
+                if len(main_tune_list) == 0 and len(update_tunes_key) == 0 and len(update_tunes_type) == 0:
+                	for tune in bank_v3_store:
+                		main_tune_list.append(tune)
+                	app = App.get_running_app()
+                	app.main_tune_list_rv = [{'text': str(x)} for x in sorted(list(dict.fromkeys(main_tune_list)))]
+
+
+                else:
+                	app = App.get_running_app()
+                	app.main_tune_list_rv = [{'text': str(x)} for x in sorted(list(dict.fromkeys(main_tune_list)))]
             except:
             	pass
 

@@ -2,8 +2,6 @@ MyScreenManager:
 	LoadingScreen:
 	MainScreen:
 	TunesInBankScreen:
-	TuneKeysScreen:
-	DisplayTunesScreen:
 	SearchScreen:
 
 <LoadingScreen>
@@ -23,7 +21,7 @@ MyScreenManager:
 			text:'Tune Bank'
 			on_press: root.populalte_main_tune_list_rv()
 			on_release: 
-				app.root.current = 'tune_search'
+				app.root.current = 'tunes_in_bank_screen'
 				app.root.transition.direction = 'left'
 				root.populate_tune_types_rv()
 				root.populate_tune_keys_rv()
@@ -35,7 +33,7 @@ MyScreenManager:
 
 <TunesInBankScreen>
 	tune_search: tune_search_res
-	name: 'tune_search'
+	name: 'tunes_in_bank_screen'
 	BoxLayout:
 		orientation: 'vertical'
 		TextInput:
@@ -49,9 +47,9 @@ MyScreenManager:
 			size_hint_y: 1
 		TuneKeysInStoreRV:
 			size_hint_y: 1
-		TuneTypesRV:
+		MainTuneListRV:
 			size_hint_y: 10
-	        viewclass: 'TuneTypesRVButton'
+	        viewclass: 'MainTuneListRVButton'
 	        data: app.main_tune_list_rv
 	        RecycleBoxLayout:
 	            default_size: None, dp(56)
@@ -94,75 +92,15 @@ MyScreenManager:
 				app.root.current = 'main screen'
 				app.root.transition.direction = 'right'
 
-<TuneKeysScreen>
-	name: 'tune keys screen'
-	BoxLayout:
-		orientation: 'vertical'
-		TuneKeysRV:
-			size_hint_y: 10
-	        viewclass: 'TuneKeysRVButton'
-	        data: app.tune_keys_rv_data
-	        RecycleBoxLayout:
-	            default_size: None, dp(56)
-	            default_size_hint: 1, None
-	            size_hint_y: None
-	            height: self.minimum_height
-	            orientation: 'vertical'
-	    BoxLayout:
-		    size_hint_y: 1
-		    orientation: 'horizontal'
-		    Button:
-		    	text:'Back'
-		    	on_press: 
-		    		app.root.current = 'tune types'
-		    		app.root.transition.direction = 'right'
-		    Button:
-		    	text:'Home'
-		    	on_press: 
-		    		app.root.current = 'main screen'
-		    		app.root.transition.direction = 'right'
 
 
 
-<DisplayTunesScreen>
-	name: 'display tunes screen'
-	BoxLayout:
-		orientation: 'vertical'
-		DisplayTypesRV:
-			size_hint_y: 10
-		    viewclass: 'DisplayTunesScreenButton'
-		    data: app.display_tune_rv_data
-		    RecycleBoxLayout:
-		        default_size: None, dp(56)
-		        default_size_hint: 1, None
-		        size_hint_y: None
-		        height: self.minimum_height
-		        orientation: 'vertical'
-	    BoxLayout:
-		    size_hint_y: 1
-		    orientation: 'horizontal'
-		    Button:
-		    	text:'Back'
-		    	on_press: 
-		    		app.root.current = 'tune keys screen'
-		    		app.root.transition.direction = 'right'
-		    Button:
-		    	text:'Home'
-		    	on_press: 
-		    		app.root.current = 'main screen'
-		    		app.root.transition.direction = 'right'
-
-<TuneTypesRVButton>
+<MainTuneListRVButton>
 	on_press: root.open_tune_popup()
 	on_release: root.create_abc_and_midi()
 	id: tune_types_rv_button
 
 
-<TuneKeysRVButton>
-	on_press: root.populate_display_tunes_rv()
-	on_release:
-		app.root.current = 'display tunes screen'
-		app.root.transition.direction = 'left'
 
 <SearchRVButton>
 	on_press: root.open_popup()
@@ -213,7 +151,7 @@ MyScreenManager:
 		    on_release: root.dismiss()
 
 <TuneTypesInStoreRV>:
-    viewclass: 'SelectableLabel'
+    viewclass: 'SelectableLabelTuneType'
     data: app.tune_types_in_store_rv
     bar_width: 16
     do_scroll_x: True
@@ -226,7 +164,7 @@ MyScreenManager:
         touch_multiselect: True
 
 <TuneKeysInStoreRV>:
-    viewclass: 'SelectableLabel'
+    viewclass: 'SelectableLabelTuneKey'
     data: app.tune_keys_in_store_rv
     bar_width: 16
     do_scroll_x: True
@@ -238,7 +176,7 @@ MyScreenManager:
         multiselect: True
         touch_multiselect: True
 
-<SelectableLabel>:
+<SelectableLabelTuneType>:
     # Draw a background to indicate selection
     size_hint_x: None
     width: dp(50) + self.texture_size[0]
@@ -249,6 +187,16 @@ MyScreenManager:
             pos: self.pos
             size: self.size
 
+<SelectableLabelTuneKey>:
+    # Draw a background to indicate selection
+    size_hint_x: None
+    width: dp(50) + self.texture_size[0]
+    canvas.before:
+        Color:
+            rgba: (.0, 0.9, .1, .3) if self.selected else (0, 0, 0, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
 
 
